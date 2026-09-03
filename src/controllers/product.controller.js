@@ -1,17 +1,23 @@
 import prisma from '../config/prisma.js';
 
 /**
- * Obtener todos los productos con filtros avanzados
- * GET /api/products?categoryId=1&minPrice=10000&maxPrice=50000&inStock=true
+ * Obtener todos los productos con filtros avanzados (Incluye filtro por marca)
+ * GET /api/products?categoryId=1&brandId=1&minPrice=10000...
  */
 export const getAllProducts = async (req, res, next) => {
   try {
-    const { categoryId, minPrice, maxPrice, inStock } = req.query;
+    // 1. Agregamos brandId a los parámetros recibidos
+    const { categoryId, brandId, minPrice, maxPrice, inStock } = req.query;
 
     const where = {};
 
     if (categoryId !== undefined) {
       where.categoryId = Number(categoryId);
+    }
+
+    // 2. Inyectamos la lógica del filtro de marca aquí
+    if (brandId !== undefined) {
+      where.brandId = Number(brandId);
     }
 
     if (minPrice !== undefined || maxPrice !== undefined) {
@@ -33,7 +39,8 @@ export const getAllProducts = async (req, res, next) => {
             id: true,
             name: true
           }
-        }
+        },
+        brand: true // 3. Incluimos los datos de la marca en la respuesta (JOIN)
       },
       orderBy: {
         createdAt: 'desc'
